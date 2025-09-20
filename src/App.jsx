@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ShinyText from "./components/ShinyText";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -31,11 +32,11 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gray-100 p-6">
-      <div className="bg-white shadow-md rounded-lg p-6 w-7/9">
+    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gray-700 p-6">
+      <div className="bg-gray-900 shadow-md rounded-lg p-6 w-7/9">
       <div className="flex flex-col items-end justify-center">
     <div className="flex flex-col items-start w-full justify-center">
-        <h1 className="text-2xl font-bold mb-4 text-center">XML → JSON Converter</h1>
+        <h1 className="text-2xl font-bold mb-4 text-center"><ShinyText speed={5} text="XML → JSON Converter" /></h1>
         <input
           type="file"
           accept=".xml"
