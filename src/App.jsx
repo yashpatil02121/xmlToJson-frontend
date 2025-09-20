@@ -25,15 +25,34 @@ function App() {
         body: formData,
       });
       const data = await res.json();
-      setJsonOutput(data);
+      // Extract only the content from the output field
+      const jsonContent = data.output || data;
+      setJsonOutput(jsonContent);
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
+  const handleDownload = () => {
+    if (!jsonOutput) return;
+
+    const jsonString = JSON.stringify(jsonOutput, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file ? `${file.name.replace('.xml', '')}.json` : "converted.json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gray-700 p-6">
-      <div className="bg-gray-900 shadow-md rounded-lg p-6 w-7/9">
+    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-b from-gray-700 via-gray-800 to-gray-800 p-6">
+      <div className="bg-gray-900 shadow-md rounded-lg p-6 w-9/10 sm:w-7/9">
       <div className="flex flex-col items-end justify-center">
     <div className="flex flex-col items-start w-full justify-center">
         <h1 className="text-2xl font-bold mb-4 text-center"><ShinyText speed={5} text="XML → JSON Converter" /></h1>
@@ -52,16 +71,26 @@ function App() {
 
         <button
           onClick={handleSubmit}
-          className="w-1/5 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+          className="sm:w-1/5 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
         >
           Convert to JSON
         </button>
       </div>
 
         {jsonOutput && (
-          <pre className="mt-4 p-4 bg-gray-100 rounded text-sm overflow-auto max-h-60">
-            {JSON.stringify(jsonOutput, null, 2)}
-          </pre>
+          <div className="mt-4">
+            <pre className="p-4 bg-gray-100 rounded text-sm overflow-auto max-h-60">
+              {JSON.stringify(jsonOutput, null, 2)}
+            </pre>
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={handleDownload}
+                className="bg-green-600 text-white mt-4 py-2 px-4 rounded-lg hover:bg-green-700 text-sm"
+              >
+                Download JSON
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
