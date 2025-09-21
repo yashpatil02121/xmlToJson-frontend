@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ShinyText from "./components/ShinyText";
 import AppBar from "./components/AppBar";
 import FabButton from "./components/FabButton";
@@ -6,6 +6,21 @@ import FabButton from "./components/FabButton";
 function App() {
   const [file, setFile] = useState(null);
   const [jsonOutput, setJsonOutput] = useState(null);
+  const [isNativePlatform, setIsNativePlatform] = useState(false);
+
+  // Detect if running on native platform (Capacitor)
+  useEffect(() => {
+    const checkPlatform = async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        setIsNativePlatform(Capacitor.isNativePlatform());
+      } catch {
+        // If Capacitor is not available, assume web platform
+        setIsNativePlatform(false);
+      }
+    };
+    checkPlatform();
+  }, []);
 
   // File input handler (works everywhere)
   const handleFileChange = (e) => {
@@ -164,7 +179,7 @@ const handleDownloadTestXml = async () => {
           </div>
         )}
       </div>
-      <FabButton />
+      {!isNativePlatform && <FabButton />}
     </div>
   );
 }
