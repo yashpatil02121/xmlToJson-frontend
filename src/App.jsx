@@ -17,30 +17,25 @@ function App() {
   
 
   // ✅ Download test.xml
-  const handleDownloadTestXml = async () => {
-    try {
-      const { Capacitor } = await import("@capacitor/core");
+const handleDownloadTestXml = async () => {
+  try {
+    const testXml = await fetch("/test.xml");
+    const testXmlBlob = await testXml.blob();
 
-      if (Capacitor.isNativePlatform()) {
-        const { Browser } = await import("@capacitor/browser");
-        await Browser.open({ url: "https://accurate-energy-solutions.vercel.app/test.xml" });
-      } else {
-        // Web fallback - ensure proper MIME type
-        const testXml = await fetch("/test.xml");
-        const testXmlBlob = await testXml.blob();
-        // Create blob with explicit MIME type to ensure proper file type recognition
-        const xmlBlob = new Blob([testXmlBlob], { type: 'application/xml' });
-        const testXmlUrl = URL.createObjectURL(xmlBlob);
-        const link = document.createElement("a");
-        link.href = testXmlUrl;
-        link.download = "test.xml";
-        link.click();
-        URL.revokeObjectURL(testXmlUrl);
-      }
-    } catch (err) {
-      console.error("Download failed:", err);
-    }
-  };
+    const xmlBlob = new Blob([testXmlBlob], { type: "application/xml" });
+    const testXmlUrl = URL.createObjectURL(xmlBlob);
+
+    const link = document.createElement("a");
+    link.href = testXmlUrl;
+    link.download = "test.xml";
+    link.click();
+
+    URL.revokeObjectURL(testXmlUrl);
+  } catch (err) {
+    console.error("Download failed:", err);
+  }
+};
+
   
 
   // ✅ Convert to JSON
