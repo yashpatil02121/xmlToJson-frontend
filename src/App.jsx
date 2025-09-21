@@ -2,8 +2,6 @@ import { useState } from "react";
 import ShinyText from "./components/ShinyText";
 import AppBar from "./components/AppBar";
 import FabButton from "./components/FabButton";
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Capacitor } from '@capacitor/core';
 
 function App() {
   const [file, setFile] = useState(null);
@@ -17,9 +15,13 @@ function App() {
     try {
       const testXml = await fetch("/test.xml");
       const testXmlBlob = await testXml.blob();
-  
+
+      // Import Capacitor dynamically (safe for web build)
+      const { Capacitor } = await import("@capacitor/core");
+
       if (Capacitor.isNativePlatform()) {
-        // Mobile app (Capacitor)
+        const { Filesystem, Directory } = await import("@capacitor/filesystem");
+
         const reader = new FileReader();
         reader.onload = async () => {
           await Filesystem.writeFile({
@@ -31,7 +33,7 @@ function App() {
         };
         reader.readAsDataURL(testXmlBlob);
       } else {
-        // Web browser
+        // Web browser fallback
         const testXmlUrl = URL.createObjectURL(testXmlBlob);
         const link = document.createElement("a");
         link.href = testXmlUrl;
@@ -44,7 +46,6 @@ function App() {
     }
   };
 
-
   const handleSubmit = async () => {
     if (!file) {
       alert("Please select an XML file first!");
@@ -55,13 +56,14 @@ function App() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("https://xmltojson-backend.onrender.com/api/xmlToJson", {
-        // const res = await fetch("http://localhost:3000/api/xmlToJson", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://xmltojson-backend.onrender.com/api/xmlToJson",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const data = await res.json();
-      // Extract only the content from the output field
       const jsonContent = data.output || data;
       setJsonOutput(jsonContent);
     } catch (error) {
@@ -69,61 +71,83 @@ function App() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!jsonOutput) return;
 
     const jsonString = JSON.stringify(jsonOutput, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = file ? `${file.name.replace('.xml', '')}.json` : "converted.json";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Import Capacitor dynamically
+    const { Capacitor } = await import("@capacitor/core");
 
-    URL.revokeObjectURL(url);
+    if (Capacitor.isNativePlatform()) {
+      const { Filesystem, Directory } = await import("@capacitor/filesystem");
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        await Filesystem.writeFile({
+          path: file
+            ? `${file.name.replace(".xml", "")}.json`
+            : "converted.json",
+          data: reader.result.split(",")[1],
+          directory: Directory.Documents,
+        });
+        alert("JSON saved to Documents!");
+      };
+      reader.readAsDataURL(blob);
+    } else {
+      // Web browser fallback
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file
+        ? `${file.name.replace(".xml", "")}.json`
+        : "converted.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-tr from-[#2D1E2F] via-[#2D1E2F] to-[#4E2a4F] p-6">
       <AppBar />
-    {/* <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-b from-gray-700 via-gray-800 to-gray-800 p-6"> */}
       <div className="bg-gradient-to-bl from-[#2D1E2F] via-[#2D1E2F] to-[#4E2a4F] shadow-lg border border-white rounded-lg p-6 w-9/10 sm:w-7/9">
-      <div className="flex flex-col items-end justify-center">
-    <div className="flex flex-col items-start w-full justify-center">
-        <h1 className="text-3xl font-bold mb-4 text-center"><ShinyText speed={5} text="XML → JSON Converter" /></h1>
-        <input
-          type="file"
-          accept=".xml"
-          onChange={handleFileChange}
-          className="mb-4 block w-full text-sm text-[#934DFF]
-                     file:mr-4 file:py-2 file:px-4
-                     file:rounded-lg file:border-0
-                     file:text-sm file:font-semibold
-                     file:bg-blue-50 file:text-blue-700
-                     hover:file:bg-blue-100"
-        />
-        </div>
-
-        <div className="flex flex-row w-full gap-4 items-center justify-between">
-
-          <button
-            onClick={handleDownloadTestXml}
-            className="sm:w-1/5 w-full bg-[#934DFF] text-white p-2 rounded-lg hover:bg-blue-700"
-          >
-            Download Test XML
-          </button>
-          
-          <button
-            onClick={handleSubmit}
-            className="sm:w-1/5 w-full bg-[#934DFF] text-white p-2 rounded-lg hover:bg-blue-700"
-          >
-            Convert to JSON
-          </button>
+        <div className="flex flex-col items-end justify-center">
+          <div className="flex flex-col items-start w-full justify-center">
+            <h1 className="text-3xl font-bold mb-4 text-center">
+              <ShinyText speed={5} text="XML → JSON Converter" />
+            </h1>
+            <input
+              type="file"
+              accept=".xml"
+              onChange={handleFileChange}
+              className="mb-4 block w-full text-sm text-[#934DFF]
+                         file:mr-4 file:py-2 file:px-4
+                         file:rounded-lg file:border-0
+                         file:text-sm file:font-semibold
+                         file:bg-blue-50 file:text-blue-700
+                         hover:file:bg-blue-100"
+            />
           </div>
-      </div>
+
+          <div className="flex flex-row w-full gap-4 items-center justify-between">
+            <button
+              onClick={handleDownloadTestXml}
+              className="sm:w-1/5 w-full bg-[#934DFF] text-white p-2 rounded-lg hover:bg-blue-700"
+            >
+              Download Test XML
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              className="sm:w-1/5 w-full bg-[#934DFF] text-white p-2 rounded-lg hover:bg-blue-700"
+            >
+              Convert to JSON
+            </button>
+          </div>
+        </div>
 
         {jsonOutput && (
           <div className="mt-4">
