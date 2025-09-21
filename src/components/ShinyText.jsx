@@ -8,13 +8,12 @@ const ShinyText = ({ text, disabled = false, speed = 5, className = "" }) => {
       <style>{`
         .shiny-text {
           color:rgba(181, 188, 235, 0.64); /* Adjust this color to change intensity/style */
-          background: linear-gradient(
-  120deg,
- rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0) 60%
-);
-
+        background: linear-gradient(
+        120deg,
+        rgba(181, 188, 235, 0) 40%,
+        rgba(181, 188, 235, 0.9) 50%,
+        rgba(181, 188, 235, 0) 60%
+      );
 
           background-size: 200% 100%;
           -webkit-background-clip: text;

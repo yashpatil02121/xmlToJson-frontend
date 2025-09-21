@@ -9,6 +9,18 @@ function App() {
     setFile(e.target.files[0]);
   };
 
+   const handleDownloadTestXml = async () => {
+    // download the test.xml file from the public folder
+    const testXml = await fetch("/test.xml");
+    const testXmlBlob = await testXml.blob();
+    const testXmlUrl = URL.createObjectURL(testXmlBlob);
+    const link = document.createElement("a");
+    link.href = testXmlUrl;
+    link.download = "test.xml";
+    link.click();
+  };
+
+
   const handleSubmit = async () => {
     if (!file) {
       alert("Please select an XML file first!");
@@ -51,16 +63,17 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-b from-gray-700 via-gray-800 to-gray-800 p-6">
-      <div className="bg-gray-900 shadow-md rounded-lg p-6 w-9/10 sm:w-7/9">
+    <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-tr from-[#2D1E2F] via-[#2D1E2F] to-[#4E2a4F] p-6">
+    {/* <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-b from-gray-700 via-gray-800 to-gray-800 p-6"> */}
+      <div className="bg-gradient-to-bl from-[#2D1E2F] via-[#2D1E2F] to-[#4E2a4F] shadow-lg border border-white rounded-lg p-6 w-9/10 sm:w-7/9">
       <div className="flex flex-col items-end justify-center">
     <div className="flex flex-col items-start w-full justify-center">
-        <h1 className="text-2xl font-bold mb-4 text-center"><ShinyText speed={5} text="XML → JSON Converter" /></h1>
+        <h1 className="text-3xl font-bold mb-4 text-center"><ShinyText speed={5} text="XML → JSON Converter" /></h1>
         <input
           type="file"
           accept=".xml"
           onChange={handleFileChange}
-          className="mb-4 block w-full text-sm text-gray-600
+          className="mb-4 block w-full text-sm text-[#934DFF]
                      file:mr-4 file:py-2 file:px-4
                      file:rounded-lg file:border-0
                      file:text-sm file:font-semibold
@@ -69,12 +82,22 @@ function App() {
         />
         </div>
 
-        <button
-          onClick={handleSubmit}
-          className="sm:w-1/5 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-        >
-          Convert to JSON
-        </button>
+        <div className="flex flex-row w-full gap-4 items-center justify-between">
+
+          <button
+            onClick={handleDownloadTestXml}
+            className="sm:w-1/5 w-full bg-[#934DFF] text-white p-2 rounded-lg hover:bg-blue-700"
+          >
+            Download Test XML
+          </button>
+          
+          <button
+            onClick={handleSubmit}
+            className="sm:w-1/5 w-full bg-[#934DFF] text-white p-2 rounded-lg hover:bg-blue-700"
+          >
+            Convert to JSON
+          </button>
+          </div>
       </div>
 
         {jsonOutput && (
