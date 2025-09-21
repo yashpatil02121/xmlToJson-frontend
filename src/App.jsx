@@ -2,7 +2,6 @@ import { useState } from "react";
 import ShinyText from "./components/ShinyText";
 import AppBar from "./components/AppBar";
 import FabButton from "./components/FabButton";
-import { FilePicker } from "capacitor-file-picker";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -14,50 +13,58 @@ function App() {
       setFile(e.target.files[0]);
     }
   };
+
+  // unified save function
+const saveFile = async (blob, fileName) => {
+  const { Capacitor } = await import("@capacitor/core");
+
+  if (Capacitor.isNativePlatform()) {
+    const { Filesystem, Directory } = await import("@capacitor/filesystem");
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          await Filesystem.writeFile({
+            path: fileName,
+            data: (reader.result).split(",")[1], // strip base64 header
+            directory: Directory.Documents,
+          });
+          alert(`File saved to Documents as ${fileName}`);
+          resolve();
+        } catch (err) {
+          console.error("Filesystem error:", err);
+          reject(err);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } else {
+    // Browser fallback
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+};
+
   
 
-  // ✅ Download test.xml
 // ✅ Download test.xml
 const handleDownloadTestXml = async () => {
   try {
     const testXml = await fetch("/test.xml");
     const testXmlBlob = await testXml.blob();
-
-    const { Capacitor } = await import("@capacitor/core");
-
-    if (Capacitor.isNativePlatform()) {
-      // Use Capacitor Filesystem for APK
-      const { Filesystem, Directory } = await import("@capacitor/filesystem");
-
-      const reader = new FileReader();
-      reader.onload = async () => {
-        await Filesystem.writeFile({
-          path: "test.xml",
-          data: reader.result.split(",")[1], // remove base64 prefix
-          directory: Directory.Documents,
-        });
-        alert("File saved to Documents!");
-      };
-      reader.readAsDataURL(testXmlBlob);
-    } else {
-      // Browser fallback
-      const xmlBlob = new Blob([testXmlBlob], { type: "application/xml" });
-      const testXmlUrl = URL.createObjectURL(xmlBlob);
-
-      const link = document.createElement("a");
-      link.href = testXmlUrl;
-      link.download = "test.xml";
-      link.click();
-
-      URL.revokeObjectURL(testXmlUrl);
-    }
+    await saveFile(testXmlBlob, "test.xml");
   } catch (err) {
     console.error("Download failed:", err);
   }
 };
-
-
-  
 
   // ✅ Convert to JSON
   const handleSubmit = async () => {
@@ -88,42 +95,17 @@ const handleDownloadTestXml = async () => {
   // ✅ Download JSON
   const handleDownload = async () => {
     if (!jsonOutput) return;
-
+  
     const jsonString = JSON.stringify(jsonOutput, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
-
-    const { Capacitor } = await import("@capacitor/core");
-
-    if (Capacitor.isNativePlatform()) {
-      const { Filesystem, Directory } = await import("@capacitor/filesystem");
-
-      const reader = new FileReader();
-      reader.onload = async () => {
-        await Filesystem.writeFile({
-          path: file
-            ? `${file.name.replace(".xml", "")}.json`
-            : "converted.json",
-          data: reader.result.split(",")[1],
-          directory: Directory.Documents,
-        });
-        alert("JSON saved to Documents!");
-      };
-      reader.readAsDataURL(blob);
-    } else {
-      // Web fallback
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = file
-        ? `${file.name.replace(".xml", "")}.json`
-        : "converted.json";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
+  
+    const fileName = file
+      ? `${file.name.replace(".xml", "")}.json`
+      : "converted.json";
+  
+    await saveFile(blob, fileName);
   };
-
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-tr from-[#2D1E2F] via-[#2D1E2F] to-[#4E2a4F] p-6">
       <AppBar />
