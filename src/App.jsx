@@ -26,7 +26,7 @@ const saveFile = async (blob, fileName) => {
       reader.onload = async () => {
         try {
           await Filesystem.writeFile({
-            path: fileName,
+            path: `Tags2Braces/${fileName}`,
             data: (reader.result).split(",")[1], // strip base64 header
             directory: Directory.Documents,
           });
