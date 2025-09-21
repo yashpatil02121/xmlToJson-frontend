@@ -9,7 +9,7 @@ const AppBar = () => {
         {/* Left: Logo + Name */}
         <div className="flex items-center space-x-3">
           {/* Logo placeholder */}
-          <img src="/public/tags2braceslogo.png" alt="Tags2Braces" className="w-8 h-8" />
+          <img src="/tags2braceslogo.png" alt="Tags2Braces" className="w-8 h-8" />
           <span className="text-xl font-bold text-white tracking-wide">
             Tags2Braces
           </span>
