@@ -28,15 +28,17 @@ function App() {
   const handleDownloadTestXml = async () => {
     try {
       const { Capacitor } = await import("@capacitor/core");
-  
+
       if (Capacitor.isNativePlatform()) {
         const { Browser } = await import("@capacitor/browser");
         await Browser.open({ url: "https://accurate-energy-solutions.vercel.app/test.xml" });
       } else {
-        // Web fallback
+        // Web fallback - ensure proper MIME type
         const testXml = await fetch("/test.xml");
         const testXmlBlob = await testXml.blob();
-        const testXmlUrl = URL.createObjectURL(testXmlBlob);
+        // Create blob with explicit MIME type to ensure proper file type recognition
+        const xmlBlob = new Blob([testXmlBlob], { type: 'application/xml' });
+        const testXmlUrl = URL.createObjectURL(xmlBlob);
         const link = document.createElement("a");
         link.href = testXmlUrl;
         link.download = "test.xml";
@@ -135,7 +137,7 @@ function App() {
             ) : (
               <input
                 type="file"
-                accept=".xml"
+                accept=".xml,text/xml,application/xml"
                 onChange={handleFileChange}
                 className="mb-4 block w-full text-sm text-[#934DFF]
                            file:mr-4 file:py-2 file:px-4
