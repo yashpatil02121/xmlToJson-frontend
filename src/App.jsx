@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ShinyText from "./components/ShinyText";
+import AppBar from "./components/AppBar";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -64,6 +65,7 @@ function App() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-tr from-[#2D1E2F] via-[#2D1E2F] to-[#4E2a4F] p-6">
+      <AppBar />
     {/* <div className="flex flex-col items-center justify-center min-h-screen min-w-screen bg-gradient-to-b from-gray-700 via-gray-800 to-gray-800 p-6"> */}
       <div className="bg-gradient-to-bl from-[#2D1E2F] via-[#2D1E2F] to-[#4E2a4F] shadow-lg border border-white rounded-lg p-6 w-9/10 sm:w-7/9">
       <div className="flex flex-col items-end justify-center">
