@@ -41,20 +41,28 @@ function App() {
 
   // ✅ Download test.xml
   const handleDownloadTestXml = async () => {
-    if (Capacitor.isNativePlatform()) {
-      await Browser.open({ url: "/test.xml" }); 
-    } else {
-      // fallback: web download
-      const testXml = await fetch("/test.xml");
-      const testXmlBlob = await testXml.blob();
-      const testXmlUrl = URL.createObjectURL(testXmlBlob);
-      const link = document.createElement("a");
-      link.href = testXmlUrl;
-      link.download = "test.xml";
-      link.click();
-      URL.revokeObjectURL(testXmlUrl);
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+  
+      if (Capacitor.isNativePlatform()) {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: "https://xmltojson-backend.onrender.com/test.xml" });
+      } else {
+        // Web fallback
+        const testXml = await fetch("/test.xml");
+        const testXmlBlob = await testXml.blob();
+        const testXmlUrl = URL.createObjectURL(testXmlBlob);
+        const link = document.createElement("a");
+        link.href = testXmlUrl;
+        link.download = "test.xml";
+        link.click();
+        URL.revokeObjectURL(testXmlUrl);
+      }
+    } catch (err) {
+      console.error("Download failed:", err);
     }
   };
+  
 
   // ✅ Convert to JSON
   const handleSubmit = async () => {
