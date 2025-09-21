@@ -2,21 +2,48 @@ import { useState } from "react";
 import ShinyText from "./components/ShinyText";
 import AppBar from "./components/AppBar";
 import FabButton from "./components/FabButton";
+import { FilePicker } from "capacitor-file-picker";
+import { Capacitor } from "@capacitor/core";
 
 function App() {
   const [file, setFile] = useState(null);
   const [jsonOutput, setJsonOutput] = useState(null);
 
+  // ✅ File Picker for Capacitor
+  const handleFilePick = async () => {
+    if (Capacitor.isNativePlatform()) {
+      const result = await FilePicker.pickFiles({
+        types: ["application/xml"],
+      });
+      if (result.files.length > 0) {
+        const picked = result.files[0];
+        const base64 = picked.data;
+
+        // Convert base64 -> binary -> Blob
+        const binary = atob(base64);
+        const array = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          array[i] = binary.charCodeAt(i);
+        }
+        const blob = new Blob([array], { type: "application/xml" });
+
+        // Store as File so handleSubmit works
+        setFile(new File([blob], picked.name, { type: "application/xml" }));
+      }
+    }
+  };
+
+  // ✅ File input for Web
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
+  // ✅ Download test.xml
   const handleDownloadTestXml = async () => {
     try {
       const testXml = await fetch("/test.xml");
       const testXmlBlob = await testXml.blob();
 
-      // Import Capacitor dynamically (safe for web build)
       const { Capacitor } = await import("@capacitor/core");
 
       if (Capacitor.isNativePlatform()) {
@@ -33,7 +60,7 @@ function App() {
         };
         reader.readAsDataURL(testXmlBlob);
       } else {
-        // Web browser fallback
+        // Web fallback
         const testXmlUrl = URL.createObjectURL(testXmlBlob);
         const link = document.createElement("a");
         link.href = testXmlUrl;
@@ -46,6 +73,7 @@ function App() {
     }
   };
 
+  // ✅ Convert to JSON
   const handleSubmit = async () => {
     if (!file) {
       alert("Please select an XML file first!");
@@ -71,13 +99,13 @@ function App() {
     }
   };
 
+  // ✅ Download JSON
   const handleDownload = async () => {
     if (!jsonOutput) return;
 
     const jsonString = JSON.stringify(jsonOutput, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
 
-    // Import Capacitor dynamically
     const { Capacitor } = await import("@capacitor/core");
 
     if (Capacitor.isNativePlatform()) {
@@ -96,7 +124,7 @@ function App() {
       };
       reader.readAsDataURL(blob);
     } else {
-      // Web browser fallback
+      // Web fallback
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -119,17 +147,28 @@ function App() {
             <h1 className="text-3xl font-bold mb-4 text-center">
               <ShinyText speed={5} text="XML → JSON Converter" />
             </h1>
-            <input
-              type="file"
-              accept=".xml"
-              onChange={handleFileChange}
-              className="mb-4 block w-full text-sm text-[#934DFF]
-                         file:mr-4 file:py-2 file:px-4
-                         file:rounded-lg file:border-0
-                         file:text-sm file:font-semibold
-                         file:bg-blue-50 file:text-blue-700
-                         hover:file:bg-blue-100"
-            />
+
+            {/* Conditional input based on platform */}
+            {Capacitor.isNativePlatform() ? (
+              <button
+                onClick={handleFilePick}
+                className="mb-4 bg-[#934DFF] text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Pick XML File
+              </button>
+            ) : (
+              <input
+                type="file"
+                accept=".xml"
+                onChange={handleFileChange}
+                className="mb-4 block w-full text-sm text-[#934DFF]
+                           file:mr-4 file:py-2 file:px-4
+                           file:rounded-lg file:border-0
+                           file:text-sm file:font-semibold
+                           file:bg-blue-50 file:text-blue-700
+                           hover:file:bg-blue-100"
+              />
+            )}
           </div>
 
           <div className="flex flex-row w-full gap-4 items-center justify-between">
