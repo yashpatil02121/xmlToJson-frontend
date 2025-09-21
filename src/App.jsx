@@ -1,6 +1,9 @@
 import { useState } from "react";
 import ShinyText from "./components/ShinyText";
 import AppBar from "./components/AppBar";
+import FabButton from "./components/FabButton";
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 
 function App() {
   const [file, setFile] = useState(null);
@@ -10,15 +13,35 @@ function App() {
     setFile(e.target.files[0]);
   };
 
-   const handleDownloadTestXml = async () => {
-    // download the test.xml file from the public folder
-    const testXml = await fetch("/test.xml");
-    const testXmlBlob = await testXml.blob();
-    const testXmlUrl = URL.createObjectURL(testXmlBlob);
-    const link = document.createElement("a");
-    link.href = testXmlUrl;
-    link.download = "test.xml";
-    link.click();
+  const handleDownloadTestXml = async () => {
+    try {
+      const testXml = await fetch("/test.xml");
+      const testXmlBlob = await testXml.blob();
+  
+      if (Capacitor.isNativePlatform()) {
+        // Mobile app (Capacitor)
+        const reader = new FileReader();
+        reader.onload = async () => {
+          await Filesystem.writeFile({
+            path: "test.xml",
+            data: reader.result.split(",")[1], // remove base64 header
+            directory: Directory.Documents,
+          });
+          alert("File saved to Documents folder!");
+        };
+        reader.readAsDataURL(testXmlBlob);
+      } else {
+        // Web browser
+        const testXmlUrl = URL.createObjectURL(testXmlBlob);
+        const link = document.createElement("a");
+        link.href = testXmlUrl;
+        link.download = "test.xml";
+        link.click();
+        URL.revokeObjectURL(testXmlUrl);
+      }
+    } catch (err) {
+      console.error("Download failed:", err);
+    }
   };
 
 
@@ -118,6 +141,7 @@ function App() {
           </div>
         )}
       </div>
+      <FabButton />
     </div>
   );
 }
