@@ -4,7 +4,6 @@ import AppBar from "./components/AppBar";
 import FabButton from "./components/FabButton";
 import { FilePicker } from "capacitor-file-picker";
 import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 
 function App() {
   const [file, setFile] = useState(null);
