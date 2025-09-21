@@ -11,28 +11,14 @@ function App() {
 
   // ✅ File Picker for Capacitor
   const handleFilePick = async () => {
-    if (Capacitor.isNativePlatform()) {
-      const result = await FilePicker.pickFiles({
-        types: ["application/xml"],
-      });
-      if (result.files.length > 0) {
-        const picked = result.files[0];
-        const base64 = picked.data;
-
-        // Convert base64 -> binary -> Blob
-        const binary = atob(base64);
-        const array = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-          array[i] = binary.charCodeAt(i);
-        }
-        const blob = new Blob([array], { type: "application/xml" });
-
-        // Store as File so handleSubmit works
-        setFile(new File([blob], picked.name, { type: "application/xml" }));
-      }
+    const result = await FilePicker.pickFiles({
+      types: ["application/xml"],
+    });
+  
+    if (result.files.length > 0) {
+      console.log("Picked:", result.files[0]);
     }
   };
-
   // ✅ File input for Web
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
