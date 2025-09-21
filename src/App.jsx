@@ -45,7 +45,7 @@ function App() {
   
       if (Capacitor.isNativePlatform()) {
         const { Browser } = await import("@capacitor/browser");
-        await Browser.open({ url: "https://xmltojson-backend.onrender.com/test.xml" });
+        await Browser.open({ url: "https://accurate-energy-solutions.vercel.app/test.xml" });
       } else {
         // Web fallback
         const testXml = await fetch("/test.xml");
