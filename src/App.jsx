@@ -17,24 +17,45 @@ function App() {
   
 
   // ✅ Download test.xml
+// ✅ Download test.xml
 const handleDownloadTestXml = async () => {
   try {
     const testXml = await fetch("/test.xml");
     const testXmlBlob = await testXml.blob();
 
-    const xmlBlob = new Blob([testXmlBlob], { type: "application/xml" });
-    const testXmlUrl = URL.createObjectURL(xmlBlob);
+    const { Capacitor } = await import("@capacitor/core");
 
-    const link = document.createElement("a");
-    link.href = testXmlUrl;
-    link.download = "test.xml";
-    link.click();
+    if (Capacitor.isNativePlatform()) {
+      // Use Capacitor Filesystem for APK
+      const { Filesystem, Directory } = await import("@capacitor/filesystem");
 
-    URL.revokeObjectURL(testXmlUrl);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        await Filesystem.writeFile({
+          path: "test.xml",
+          data: reader.result.split(",")[1], // remove base64 prefix
+          directory: Directory.Documents,
+        });
+        alert("File saved to Documents!");
+      };
+      reader.readAsDataURL(testXmlBlob);
+    } else {
+      // Browser fallback
+      const xmlBlob = new Blob([testXmlBlob], { type: "application/xml" });
+      const testXmlUrl = URL.createObjectURL(xmlBlob);
+
+      const link = document.createElement("a");
+      link.href = testXmlUrl;
+      link.download = "test.xml";
+      link.click();
+
+      URL.revokeObjectURL(testXmlUrl);
+    }
   } catch (err) {
     console.error("Download failed:", err);
   }
 };
+
 
   
 
