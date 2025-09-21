@@ -8,17 +8,6 @@ function App() {
   const [file, setFile] = useState(null);
   const [jsonOutput, setJsonOutput] = useState(null);
 
-  // ✅ File Picker for Capacitor
-  const handleFilePick = async () => {
-    const result = await FilePicker.pickFiles({
-      types: ["application/xml"],
-    });
-  
-    if (result.files.length > 0) {
-      console.log("Picked:", result.files[0]);
-    }
-  };
-
   // File input handler (works everywhere)
   const handleFileChange = (e) => {
     if (e.target.files?.length) {
