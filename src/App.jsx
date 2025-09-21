@@ -3,7 +3,6 @@ import ShinyText from "./components/ShinyText";
 import AppBar from "./components/AppBar";
 import FabButton from "./components/FabButton";
 import { FilePicker } from "capacitor-file-picker";
-import { Capacitor } from "@capacitor/core";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -19,10 +18,14 @@ function App() {
       console.log("Picked:", result.files[0]);
     }
   };
-  // ✅ File input for Web
+
+  // File input handler (works everywhere)
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    if (e.target.files?.length) {
+      setFile(e.target.files[0]);
+    }
   };
+  
 
   // ✅ Download test.xml
   const handleDownloadTestXml = async () => {
@@ -127,14 +130,7 @@ function App() {
             </h1>
 
             {/* Conditional input based on platform */}
-            {Capacitor.isNativePlatform() ? (
-              <button
-                onClick={handleFilePick}
-                className="mb-4 bg-[#934DFF] text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              >
-                Pick XML File
-              </button>
-            ) : (
+            
               <input
                 type="file"
                 accept=".xml,text/xml,application/xml"
@@ -146,7 +142,6 @@ function App() {
                            file:bg-blue-50 file:text-blue-700
                            hover:file:bg-blue-100"
               />
-            )}
           </div>
 
           <div className="flex flex-row w-full gap-4 items-center justify-between">
